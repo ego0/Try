@@ -7,6 +7,7 @@ Clone repository
 Backend:
 - cd backend
 - npm install
+- /config/db.js sesuaikan database_name, username, password dengan local database
 - import db.sql ke local database  "psql -U username dbname < dbexport.sql"
 - node start or nodemon start
 
