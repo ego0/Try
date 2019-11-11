@@ -16,12 +16,12 @@ frontend:
 - npm start
 
 NOTED:
-MOBX tidak menggunakan decorator karena feature nya juga sedikit jadi memutuskan untuk tidak menginstall babel, etc
-HAPI.JS(v18)
-AXIOS untuk HTT request
-SEQUELIZE orm postgresql
-XML2JSON untuk mengconvert XML to Json
-*minus
+- MOBX tidak menggunakan decorator karena feature nya juga sedikit jadi memutuskan untuk tidak menginstall babel, etc
+- HAPI.JS(v18)
+- AXIOS untuk HTT request
+- SEQUELIZE orm postgresql
+- XML2JSON untuk mengconvert XML to Json
+- minus
   - belum bisa edit image 
   - validation form edit di front end belum
   - return json masih standar
