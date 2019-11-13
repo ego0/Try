@@ -94,8 +94,12 @@ class App extends Component {
                     return (
                         <div className={"wrapper card-"+prod.id} key={prod.id}>
                             <div className="product-img">
-                                <input type="file" name="file" onChange={(e) => this.handleImage(e)}/>
-                                {}
+                                <div class="button-wrapper">
+                                    <span class="label">
+                                        Upload File
+                                    </span>
+                                    <input type="file" name="file" id="upload" class="upload-box" placeholder="Upload File" onChange={(e) => this.handleImage(e)}/>
+                                </div>
                                 <img src={prod.image ? api + prod.image : "./default.jpeg"} height="261" width="212" alt={prod.name}/>
                             </div>
                             <div className="product-info">
