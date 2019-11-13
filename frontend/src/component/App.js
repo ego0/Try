@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 // import mobx-react for convered with mobX
 import { observer } from 'mobx-react'
+import {api} from '../config/api'
+
 let car_id = null // variable for define for edit card
 class App extends Component {
     state = {
@@ -10,18 +12,29 @@ class App extends Component {
         image: '',
         price: ''
     }
+    // handle image
+    handleImage(e){
+        this.setState({
+            image: e.target.files[0]
+        })
+    }
     // handle change if any onchange for each field
     handleChange(e) {
-        console.log(e.target.value, '??')
         this.setState({ [e.target.name]: e.target.value });
     }
     componentDidMount() {
         this.props.store.fetchProduct()
     }
     // function change to edit mode
-    edit(id) {
-        this.setState({edit: true})
-        car_id = id
+    edit(prod) {
+        this.setState({
+            edit: true,
+            name: prod.name,
+            description: prod.description,
+            image: prod.image,
+            price: prod.price
+        })
+        car_id = prod.id
     }
     // function for cancel edit mode to normal
     cancel() {
@@ -39,17 +52,18 @@ class App extends Component {
     }
     // function for save edit if any change on field
     saveEdit(id) {
-        let payload = {
-            'name': this.state.name,
-            'description': this.state.description,
-            'price': this.state.price,
-            'image': ''
-        }
+        const formData = new FormData()
+        formData.append(
+            'file',
+            this.state.image
+        )
+        formData.set('name', this.state.name)
+        formData.set('description', this.state.description)
+        formData.set('price', this.state.price)
         let r = window.confirm("Are you sure to update the product ?")
         if (r) {
-            this.props.store.updateProduct(payload, id)
+            this.props.store.updateProduct(formData, id)
             this.props.store.fetchProduct()
-            console.log(this.props.store.status, '??')
         }
         this.setState({edit: false})
         car_id = null
@@ -76,10 +90,13 @@ class App extends Component {
             products = this.props.store.products.data.map(prod => {
                 const button = this.buttonHtml(prod)
                 if (car_id === prod.id) {
+                    console.log(prod.image, '??')
                     return (
                         <div className={"wrapper card-"+prod.id} key={prod.id}>
                             <div className="product-img">
-                                <img src={prod.img ? prod.img : "./default.jpeg"} height="261" width="212" alt={prod.name}/>
+                                <input type="file" name="file" onChange={(e) => this.handleImage(e)}/>
+                                {}
+                                <img src={prod.image ? api + prod.image : "./default.jpeg"} height="261" width="212" alt={prod.name}/>
                             </div>
                             <div className="product-info">
                                 <div className="product-text">
@@ -99,7 +116,7 @@ class App extends Component {
                     return (
                         <div className="wrapper" key={prod.id}>
                         <div className="product-img">
-                            <img src={prod.img ? prod.img : "./default.jpeg"} height="261" width="212"  alt={prod.name}/>
+                            <img src={prod.image ? api + prod.image : "./default.jpeg"} height="261" width="212"  alt={prod.name}/>
                         </div>
                         <div className="product-info">
                             <div className="product-text">
@@ -107,7 +124,7 @@ class App extends Component {
                                 <p>{prod.description}</p>
                             </div>
                             <div className="prduct-btn">
-                                <button className="btn btn-sec" onClick={()=> this.edit(prod.id)}>Edit</button><br/>
+                                <button className="btn btn-sec" onClick={()=> this.edit(prod)}>Edit</button><br/>
                                 <button className="btn btn-dg" style={{margin: '0px'}} onClick={()=> this.remove(prod.id)}>Remove</button>
                             </div>
                             <div className="product-price-btn">

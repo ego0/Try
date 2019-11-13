@@ -4,10 +4,30 @@ const axios = require('axios')
 const xmlParser = require('xml2json')
 const db = require('./config/db')
 const product = require('./models/product')
+const fs = require('fs')
+const Inert = require('@hapi/inert');
+const Path = require('path');
 
 db.authenticate()
     .then(() => console.log('Database connected ...'))
     .catch(err => console.log('Error:' + err))
+
+const handleFileUpload = file => {
+    return new Promise((resolve, reject) => {
+        let random_number = Math.floor(Math.random()*90000) + 10000 + '.';
+        let ext = file.hapi.filename.split('.').pop();
+        let prefix = 'product'
+        const filename = prefix + random_number + ext
+        const data = file._data
+        fs.writeFile('./upload/' + filename, data, err => {
+            if (err) {
+                reject(err)
+            }
+            console.log("The file was saved!")
+            resolve(filename)
+        })
+    })
+}
 
 const createProduct = async (val) => {
     try {
@@ -62,9 +82,14 @@ const removeProduct = async (id) => {
 }
 const updateProduct = async (request) => {
     try {
+        // upload image handle
+        const image_path = await handleFileUpload(request.payload.file)
+        delete request.payload['file'] // delete file key post from client
+        request.payload['image'] = '/upload/' + image_path // add new key file for save to field image
         const res = await product.update(request.payload, {where: {id: request.params.id}})
         return res
     } catch (err) {
+        console.log(err)
         return err
     }
 }
@@ -73,7 +98,25 @@ const init = async () => {
     // add server
     const server = Hapi.server({
         port: 3000,
-        host: 'localhost'
+        host: 'localhost',
+        routes: {
+            files: {
+                relativeTo: Path.join(__dirname, 'upload')
+            }
+        }
+    })
+    await server.register(Inert); 
+    // route get upload 
+    server.route({
+        method: 'GET',
+        path: '/upload/{file*}',
+        handler: {
+            directory: {
+                path: '.',
+                redirectToSlash: true,
+                index: true,
+            }
+        }
     })
     // route get product and create to local database
     server.route({
@@ -105,6 +148,11 @@ const init = async () => {
         method: 'POST',
         path: '/api/products/{id}/update',
         config: {
+            payload: {
+                output: "stream",
+                parse: true,
+                allow: "multipart/form-data"
+            },
             cors: true
         },
         handler: async (request, h) => {
